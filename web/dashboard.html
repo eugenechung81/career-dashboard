@@ -106,7 +106,7 @@
                             <span class="glyphicon glyphicon-fire" style="display: inline;"></span> 
                         </div>                         
                         <div class="col-md-3"> 
-                            <p>dextro-poc</p> 
+                            <p><a href="https://github.com/eugenechung81/dextro-poc" style="display: inline-block;">dextro-poc</a></p> 
                         </div>                         
                         <div class="col-md-5" style="display: block;"> 
                             <p style="display: block;">Computer vision proof of concept with AlchemyAPI</p> 
@@ -119,7 +119,7 @@
                         <div class="col-md-1"> 
 </div>                         
                         <div class="col-md-3"> 
-                            <p>career-dashboard</p> 
+                            <p><a href="https://github.com/eugenechung81/career-dashboard" style="display: inline-block;">career-dashboard</a></p> 
                         </div>                         
                         <div class="col-md-5" style="display: block;"> 
                             <p style="display: block;" class="git_description">Dynamic and interactive career dashboard that provides dynamic access to Hacker...<br></p> 
@@ -132,7 +132,7 @@
                         <div class="col-md-1"> 
 </div>                         
                         <div class="col-md-3"> 
-                            <p>cmb-excel-export</p> 
+                            <p><a href="https://github.com/eugenechung81/cmb-excel-export" style="display: inline-block;">cmb-excel-export</a></p> 
                         </div>                         
                         <div class="col-md-5" style="display: block;"> 
                             <p style="display: block;">Coffee Meets Bagel dating website match exporter.&nbsp;<br></p> 
@@ -145,7 +145,7 @@
                         <div class="col-md-1"> 
 </div>                         
                         <div class="col-md-3"> 
-                            <p>bc-calc</p> 
+                            <p><a href="https://github.com/eugenechung81/bc-calc" style="display: inline-block;">bc-calc</a></p> 
                         </div>                         
                         <div class="col-md-5" style="display: block;"> 
                             <p style="display: block;">A simple version of the Unix utility ‘bc’.<br></p> 
@@ -162,20 +162,27 @@
     overflow-wrap: normal;
 " data-pg-collapsed> 
 package com.novus.bc;
+
+
+
 public class BCCalc
 {
     static enum Operator
     {
         ADD("+"), SUBTRACT("-"), MULTIPLY("*"), DIVIDE("/");
+
         private final String op;
+
         private Operator(String s)
         {
             op = s;
         }
+
         public String getOp()
         {
             return op;
         }
+
         public static Operator getEnum(String value)
         {
             for (Operator v : values())
@@ -184,167 +191,130 @@ public class BCCalc
             return null;
         }
     };
-    static class Node<T> 
-                                    {
-                                    Operator operator;
-                                    Node
 
-                                    <T> left;
-                                        Node
+    static class Node<T>
+    {
+        Operator operator;
+        Node<T> left;
+        Node<T> right;
+        T value;
 
-                                        <T> right;
-                                            T value;
-                                            public Node(T value)
-                                            {
-                                            super();
-                                            this.value = value;
-                                            }
-                                            public Node(Operator operator, Node
+        public Node(T value)
+        {
+            super();
+            this.value = value;
+        }
 
-                                            <T> left, Node
-                                                <T> right)
-                                                    {
-                                                    super();
-                                                    this.operator = operator;
-                                                    this.left = left;
-                                                    this.right = right;
-                                                    }
-                                                    }
-                                                    interface Parser
+        public Node(Operator operator, Node<T> left, Node<T> right)
+        {
+            super();
+            this.operator = operator;
+            this.left = left;
+            this.right = right;
+        }
 
-                                                    <T> 
-                                                        {
-                                                        Node
+    }
 
-                                                        <T> parse(String exp);
-                                                            }
-                                                            static class SimpleParser implements Parser
+    interface Parser<T>
+    {
+        Node<T> parse(String exp);
+    }
 
-                                                            <Integer> 
-                                                                {
-                                                                @Override
-                                                                public Node
+    static class SimpleParser implements Parser<Integer>
+    {
+        @Override
+        public Node<Integer> parse(String exp)
+        {
+            return parseExpression(new StringBuffer(exp));
+        }
 
-                                                                <Integer> parse(String exp)
-                                                                    {
-                                                                    return parseExpression(new StringBuffer(exp));
-                                                                    }
-                                                                    private Node
+        private Node<Integer> parseExpression(StringBuffer sb)
+        {
+            Node<Integer> num = parseMultiDivExp(sb);
+            Operator operator = getOperator(sb);
+            if (Operator.ADD.equals(operator) || Operator.SUBTRACT.equals(operator))
+            {
+                sb.delete(sb.length() - 1, sb.length());
+                Node<Integer> node = parseExpression(sb);
+                return new Node<Integer>(operator, node, num);
+            }
+            return num;
+        }
 
-                                                                    <Integer> parseExpression(StringBuffer sb)
-                                                                        {
-                                                                        Node
+        private Node<Integer> parseMultiDivExp(StringBuffer sb)
+        {
+            Node<Integer> num = parseNumNode(sb);
+            Operator operator = getOperator(sb);
+            if (Operator.MULTIPLY.equals(operator) || Operator.DIVIDE.equals(operator))
+            {
+                sb.delete(sb.length() - 1, sb.length());
+                Node<Integer> node = parseMultiDivExp(sb);
+                return new Node<Integer>(operator, node, num);
+            }
+            return num;
+        }
 
-                                                                        <Integer> num = parseMultiDivExp(sb);
-                                                                            Operator operator = getOperator(sb);
-                                                                            if (Operator.ADD.equals(operator) || Operator.SUBTRACT.equals(operator))
-                                                                            {
-                                                                            sb.delete(sb.length() - 1, sb.length());
-                                                                            Node
+        private static Node<Integer> parseNumNode(StringBuffer sb)
+        {
+            for (int i = sb.length() - 1; i >= 0; i--)
+            {
+                if (sb.charAt(i) < '0' || sb.charAt(i) > '9')
+                {
+                    String num = sb.substring(i + 1, sb.length());
+                    sb.delete(i + 1, sb.length());
+                    return new Node<Integer>(Integer.parseInt(num));
+                }
+            }
+            return new Node<Integer>(Integer.parseInt(sb.toString()));
+        }
 
-                                                                            <Integer> node = parseExpression(sb);
-                                                                                return new Node
+        static Operator getOperator(StringBuffer sb)
+        {
+            String op = String.valueOf(sb.charAt(sb.length() - 1));
+            return Operator.getEnum(op);
+        }
+    }
 
-                                                                                <Integer>(operator, node, num);
-                                                                                    }
-                                                                                    return num;
-                                                                                    }
-                                                                                    private Node
+    interface Evaluator<T>
+    {
+        T evaluate(Node<T> root) throws Exception;
+    }
 
-                                                                                    <Integer> parseMultiDivExp(StringBuffer sb)
-                                                                                        {
-                                                                                        Node
+    static class BasicEvaluator implements Evaluator<Integer>
+    {
+        @Override
+        public Integer evaluate(Node<Integer> node) throws Exception
+        {
+            if (node.operator == null)
+                return node.value;
+            if (node.operator.equals(Operator.MULTIPLY))
+                return evaluate(node.left) * evaluate(node.right);
+            else if (node.operator.equals(Operator.DIVIDE))
+                return evaluate(node.left) / evaluate(node.right);
+            else if (node.operator.equals(Operator.ADD))
+                return evaluate(node.left) + evaluate(node.right);
+            else if (node.operator.equals(Operator.SUBTRACT))
+                return evaluate(node.left) - evaluate(node.right);
+            throw new Exception("Error evaluting");
+        }
+    }
 
-                                                                                        <Integer> num = parseNumNode(sb);
-                                                                                            Operator operator = getOperator(sb);
-                                                                                            if (Operator.MULTIPLY.equals(operator) || Operator.DIVIDE.equals(operator))
-                                                                                            {
-                                                                                            sb.delete(sb.length() - 1, sb.length());
-                                                                                            Node
-
-                                                                                            <Integer> node = parseMultiDivExp(sb);
-                                                                                                return new Node
-
-                                                                                                <Integer>(operator, node, num);
-                                                                                                    }
-                                                                                                    return num;
-                                                                                                    }
-                                                                                                    private static Node
-
-                                                                                                    <Integer> parseNumNode(StringBuffer sb)
-                                                                                                        {
-                                                                                                        for (int i = sb.length() - 1; i >= 0; i--)
-                                                                                                        {
-                                                                                                        if (sb.charAt(i) 
-
-                                                                                                        < '0' || sb.charat(i)> '9')
-                                                                                                            {
-                                                                                                            String num = sb.substring(i + 1, sb.length());
-                                                                                                            sb.delete(i + 1, sb.length());
-                                                                                                            return new Node
-
-                                                                                                            <Integer>(Integer.parseInt(num));
-                                                                                                                }
-                                                                                                                }
-                                                                                                                return new Node
-
-                                                                                                                <Integer>(Integer.parseInt(sb.toString()));
-                                                                                                                    }
-                                                                                                                    static Operator getOperator(StringBuffer sb)
-                                                                                                                    {
-                                                                                                                    String op = String.valueOf(sb.charAt(sb.length() - 1));
-                                                                                                                    return Operator.getEnum(op);
-                                                                                                                    }
-                                                                                                                    }
-                                                                                                                    interface Evaluator
-
-                                                                                                                    <T> 
-                                                                                                                        {
-                                                                                                                        T evaluate(Node
-
-                                                                                                                        <T> root) throws Exception;
-                                                                                                                            }
-                                                                                                                            static class BasicEvaluator implements Evaluator
-
-                                                                                                                            <Integer> 
-                                                                                                                                {
-                                                                                                                                @Override
-                                                                                                                                public Integer evaluate(Node
-
-                                                                                                                                <Integer> node) throws Exception
-                                                                                                                                    {
-                                                                                                                                    if (node.operator == null)
-                                                                                                                                    return node.value;
-                                                                                                                                    if (node.operator.equals(Operator.MULTIPLY))
-                                                                                                                                    return evaluate(node.left) * evaluate(node.right);
-                                                                                                                                    else if (node.operator.equals(Operator.DIVIDE))
-                                                                                                                                    return evaluate(node.left) / evaluate(node.right);
-                                                                                                                                    else if (node.operator.equals(Operator.ADD))
-                                                                                                                                    return evaluate(node.left) + evaluate(node.right);
-                                                                                                                                    else if (node.operator.equals(Operator.SUBTRACT))
-                                                                                                                                    return evaluate(node.left) - evaluate(node.right);
-                                                                                                                                    throw new Exception("Error evaluting");
-                                                                                                                                    }
-                                                                                                                                    }
-                                                                                                                                    public static void main(String[] args) throws Exception
-                                                                                                                                    {
-                                                                                                                                    // String exp = "5+2-1*5+3";
-                                                                                                                                    String exp = args[0];
-                                                                                                                                    Parser
-
-                                                                                                                                    <Integer> parser = new SimpleParser();
-                                                                                                                                        Node
-
-                                                                                                                                        <Integer> root = parser.parse(exp);
-                                                                                                                                            Evaluator
-
-                                                                                                                                            <Integer> evaluator = new BasicEvaluator();
-                                                                                                                                                int result = evaluator.evaluate(root);
-                                                                                                                                                System.out.println(result);
-                                                                                                                                                }
-                                                                                                                                                }
+    public static void main(String[] args) throws Exception
+    {
+        // String exp = "5+2-1*5+3";
+        String exp = args[0];
+    
+        Parser<Integer> parser = new SimpleParser();
+        Node<Integer> root = parser.parse(exp);
+    
+        Evaluator<Integer> evaluator = new BasicEvaluator();
+        int result = evaluator.evaluate(root);
+    
+        System.out.println(result);
+    }
+}
 </pre> 
-                            <button type="button" class="btn btn-default">Random</button>                             
+                            <button type="button" class="btn btn-default" disabled="disabled">Random</button>                             
                         </details>                         
                     </div>                     
                 </div>                 
